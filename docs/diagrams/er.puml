@@ -1,0 +1,133 @@
+@startuml er
+title BrandBridge - Entity Relationship Diagram
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam linetype ortho
+skinparam class {
+  BackgroundColor #FDF6EC
+  BorderColor #784BA8
+  ArrowColor #1F1F47
+  FontColor #1F1F47
+}
+
+entity "Users" as users {
+  * User_ID : INT <<PK>>
+  --
+  Username   : VARCHAR(20)
+  Email      : VARCHAR(20)
+  Password   : VARCHAR(200)  <bcrypt>
+  Type       : sponsor | influencer | admin
+  Created_at : DATETIME
+}
+
+entity "Sponsors" as sponsors {
+  * Sponser_ID : INT <<PK>>
+  --
+  Name       : VARCHAR(20)
+  Budget     : INT
+  Industry   : VARCHAR(20)
+  Created_by : FK -> Users.User_ID
+  Created_at : DATETIME
+  Flag       : Yes | No
+  Status     : Pending | Approved
+}
+
+entity "Influencers" as influencers {
+  * Infuencer_ID : INT <<PK>>
+  --
+  Name        : VARCHAR(20)
+  About       : VARCHAR(200)
+  Profile_Pic : VARCHAR
+  Category    : VARCHAR(20)
+  Niche       : VARCHAR(20)
+  Reach       : INT
+  Created_by  : FK -> Users.User_ID
+  Created_at  : DATETIME
+  Views       : INT
+  Avg_Rating  : FLOAT
+  Rating_No   : INT
+  Flag        : Yes | No
+}
+
+entity "Campaign" as campaign {
+  * Campaign_ID : INT <<PK>>
+  --
+  Name               : VARCHAR(20)
+  Desc               : VARCHAR(100)
+  Start_Date         : DATETIME
+  End_Date           : DATETIME
+  Budget             : INT
+  Goals              : VARCHAR(100)
+  Created_by         : FK -> Sponsors
+  Influencer         : FK -> Influencers
+  Status             : Open | Requested_to |\nRequested_by | Accepted
+  Flag               : Yes | No
+  Views              : INT
+  Preferred_Category : VARCHAR(20)
+  Visibility         : All | Private
+}
+
+entity "Ad_Request" as adrequest {
+  * Request_ID : INT <<PK>>
+  --
+  Campaign     : FK -> Campaign
+  Requirements : VARCHAR(100)
+  Payment      : INT
+  Status       : Open | Completed
+  Created_By   : FK -> Sponsors
+  Created_at   : DATETIME
+}
+
+entity "Messages" as messages {
+  * Message_ID : INT <<PK>>
+  --
+  Campaign : FK -> Campaign
+  From     : INT
+  To       : INT (1 = to sponsor)
+  Message  : VARCHAR(100)
+  Date     : DATETIME
+}
+
+entity "Rating" as rating {
+  * Rating_ID : INT <<PK>>
+  --
+  Rating   : INT (0..5)
+  Message  : VARCHAR(100)
+  To       : FK -> Influencers
+  By       : FK -> Sponsors
+  Rated_At : DATETIME
+}
+
+entity "Saved" as saved {
+  * Save_ID : INT <<PK>>
+  --
+  Saved   : FK -> Campaign
+  Of      : FK -> Influencers
+  Saved_At: DATETIME
+}
+
+entity "ChatMessage" as chat {
+  * Message_Id : INT <<PK>>
+  --
+  Sender_Id     : INT
+  Sender_Type   : sponsor | influencer
+  Receiver_Id   : INT
+  Receiver_Type : sponsor | influencer
+  Message       : VARCHAR(500)
+  timestamp     : DATETIME
+}
+
+users        ||--o{ sponsors    : owns
+users        ||--o{ influencers : owns
+sponsors     ||--o{ campaign    : creates
+sponsors     ||--o{ adrequest   : authors
+sponsors     ||--o{ rating      : gives
+influencers  }o--o{ campaign    : assigned to
+campaign     ||--o{ adrequest   : contains
+campaign     ||--o{ messages    : has thread
+campaign     ||--o{ saved       : bookmarked in
+influencers  ||--o{ saved       : bookmarks
+influencers  ||--o{ rating      : receives
+
+@enduml

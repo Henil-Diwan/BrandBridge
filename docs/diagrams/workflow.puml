@@ -1,0 +1,76 @@
+@startuml workflow
+title BrandBridge - Sponsor / Influencer Workflow
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam activity {
+  BackgroundColor #FDF6EC
+  BorderColor #784BA8
+  FontColor #1F1F47
+  DiamondBackgroundColor #FFE5EC
+  DiamondBorderColor #FA709A
+  ArrowColor #1F1F47
+  StartColor #5C9DF1
+  EndColor #FA709A
+}
+
+|#FFE5EC|Sponsor|
+|#E8F0FE|Admin|
+|#FDF6EC|Influencer|
+
+|Sponsor|
+start
+:Register account (type = sponsor);
+:Submit sponsor profile\n(Name, Budget, Industry);
+
+|Admin|
+:Review pending sponsor\n(/admin_requests);
+if (Approve?) then (yes)
+  :Status = Approved;
+else (no)
+  :Reject / leave Pending;
+  stop
+endif
+
+|Sponsor|
+:Login (allowed only if Approved);
+:Create Campaign\n(visibility, dates, budget);
+:Create Ad_Request(s)\nunder Campaign;
+
+split
+  |Sponsor|
+  :Browse industry influencers\n(/sponsor_dashboard);
+  :Open influencer profile;
+  :Send "Requested_to"\nfor selected campaigns;
+  |Influencer|
+  :See request in profile;
+  if (Accept?) then (yes)
+    :Status = Accepted;
+  else (no)
+    :Reject (Status -> Open);
+  endif
+split again
+  |Influencer|
+  :Register account (type = influencer);
+  :Submit profile\n(About, Category, Niche,\nReach, Profile_Pic);
+  :Browse open campaigns\n(/all_campaigns, /search);
+  :Save campaign OR\nsend "Requested_by";
+  |Sponsor|
+  if (Accept influencer offer?) then (yes)
+    :Status = Accepted;
+  else (no)
+    :Reject (Status -> Open);
+  endif
+end split
+
+|Sponsor|
+:Mark Ad_Request "Completed"\nas work is delivered;
+:Rate influencer\n(updates Avg_Rating);
+:Export campaigns CSV\n(Celery + Redis);
+
+|Admin|
+:Flag / Unflag misuse\n(campaigns, sponsors,\ninfluencers);
+:View dashboards\n(Chart.js doughnut + bar);
+stop
+
+@enduml

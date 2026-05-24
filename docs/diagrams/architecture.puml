@@ -1,0 +1,64 @@
+@startuml architecture
+title BrandBridge - System Architecture
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam component {
+  BackgroundColor #FDF6EC
+  BorderColor #784BA8
+  FontColor #1F1F47
+}
+skinparam database {
+  BackgroundColor #E8F0FE
+  BorderColor #5C9DF1
+}
+skinparam queue {
+  BackgroundColor #FFE5EC
+  BorderColor #FA709A
+}
+skinparam actor {
+  BackgroundColor #FFE5EC
+  BorderColor #FA709A
+}
+
+actor "Sponsor"     as sponsor
+actor "Influencer"  as influencer
+actor "Admin"       as admin
+
+package "Browser (SPA)" {
+  component "Vue 3 + Vite\nFrontend\n(Bootstrap 5, Chart.js,\nvue-router, axios)" as Frontend
+}
+
+package "Flask Backend (port 5001)" {
+  component "REST API\n(routes.py)"            as API
+  component "JWT Auth\n(flask-jwt-extended)"   as JWT
+  component "Flask-Admin\n(/database)"         as AdminPanel
+  component "SQLAlchemy ORM\n(model.py)"       as ORM
+  component "Celery Tasks\n(tasks.py)"         as Tasks
+}
+
+database "SQLite\n(project.db)"            as DB
+queue    "Redis\n(broker + backend)"       as Redis
+component "Celery Worker"                   as Worker
+folder   "uploads/\n(profile pictures,\nCSV exports)" as Uploads
+
+sponsor     --> Frontend : HTTPS
+influencer  --> Frontend : HTTPS
+admin       --> Frontend : HTTPS
+admin       --> AdminPanel : Direct CRUD
+
+Frontend    --> API        : JSON / multipart\n(axios)
+API         --> JWT        : verify token
+API         --> ORM        : queries
+ORM         --> DB
+API         --> Tasks      : .delay(sponsor_id)
+Tasks       --> Redis      : enqueue
+Worker      --> Redis      : pull job
+Worker      --> ORM        : query campaigns
+Worker      --> Uploads    : write CSV
+API         --> Uploads    : serve files
+AdminPanel  --> ORM
+
+@enduml
