@@ -1,0 +1,12 @@
+Flask>=3.0
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-Bcrypt
+Flask-JWT-Extended
+Flask-Cors
+Flask-Admin
+Flask-Caching
+Flask-Excel
+celery>=5.3
+redis
+pandas

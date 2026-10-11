@@ -2,11 +2,11 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
-import SponsorHeader from "@/components/SponsorHeader.vue";
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
 import InfluencerHeader from "@/components/InfluencerHeader.vue";
-
+import InfluencerFooter from "@/components/InfluencerFooter.vue";
+import SponsorFooter from "@/components/SponsorFooter.vue";
 let router = useRouter();
 let current_user = ref({
   user_id: 0,
@@ -29,50 +29,40 @@ let current_influencer = ref({
   created_at: "",
 });
 let campaigns = ref([]);
-
 onMounted(async () => {
   try {
+    document.title = `BrandBridge | Influencer`;
     const token = JSON.parse(localStorage.getItem("user"))?.access_token;
     console.log(token);
-
     if (!token) {
       throw new Error("No token found");
     }
-
     const response = await axios.get("http://127.0.0.1:5001/protected", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-
     current_user.value = response.data.logged_in_as;
     current_influencer.value = response.data.current_influencer;
-
     const response2 = await axios.get(
       "http://127.0.0.1:5001/influencer_dashboard",
       {
-        params: { user_id: current_user.value.user_id }, // Pass user_id as a query parameter
+        params: { user_id: current_user.value.user_id },
       }
     );
-
     console.log(response2);
-
-    // Extract data from the response and assign it to the respective variables
     campaigns.value = response2.data.campaigns;
-
   } catch (err) {
     console.log(err);
     router.push("/login");
   }
 });
-
 const submitRequest = async (campaign_id) => {
   const requestdata = {
     campaign_id: campaign_id,
-    influencer_id: current_influencer.value.id
-    };
-
-    try {
+    influencer_id: current_influencer.value.id,
+  };
+  try {
     const response_request = await axios.post(
       "http://127.0.0.1:5001/request_by_influencer",
       requestdata,
@@ -82,7 +72,6 @@ const submitRequest = async (campaign_id) => {
         },
       }
     );
-
     toast("Request Sent Successfully", {
       theme: "auto",
       type: "success",
@@ -102,15 +91,12 @@ const submitRequest = async (campaign_id) => {
     });
   }
 };
-
-
 const saveCampaign = async (campaign_id) => {
   const requestdata = {
     campaign_id: campaign_id,
-    influencer_id: current_influencer.value.id
-    };
-
-    try {
+    influencer_id: current_influencer.value.id,
+  };
+  try {
     const save_response = await axios.post(
       "http://127.0.0.1:5001/save_campaign",
       requestdata,
@@ -120,7 +106,6 @@ const saveCampaign = async (campaign_id) => {
         },
       }
     );
-
     toast("Campaign Saved Successfully", {
       theme: "auto",
       type: "success",
@@ -140,14 +125,12 @@ const saveCampaign = async (campaign_id) => {
     });
   }
 };
-
 const unsaveCampaign = async (campaign_id) => {
   const requestdata = {
     campaign_id: campaign_id,
-    influencer_id: current_influencer.value.id
-    };
-
-    try {
+    influencer_id: current_influencer.value.id,
+  };
+  try {
     const unsave_response = await axios.post(
       "http://127.0.0.1:5001/unsave_campaign",
       requestdata,
@@ -157,7 +140,6 @@ const unsaveCampaign = async (campaign_id) => {
         },
       }
     );
-
     toast("Campaign Unsaved Successfully", {
       theme: "auto",
       type: "success",
@@ -178,69 +160,118 @@ const unsaveCampaign = async (campaign_id) => {
   }
 };
 </script>
-
 <template>
   <main>
     <InfluencerHeader />
-    <h2>Hello {{ current_influencer.name }}</h2>
-
-    <h3 class="mt-5">Current Campaigns in Your Industry</h3>
-    <div v-if="campaigns.length > 0">
-      <div class="row">
-        <div class="col-lg-3" v-for="campaign in campaigns" :key="campaign.id">
-          <div class="card" style="width: 18rem">
-            <div class="card-body">
-              <h5 class="card-title">
-                <RouterLink to="/">{{ campaign.name }}</RouterLink>
-              </h5>
-              <p class="card-text">
-                {{ campaign.desc }}
-              </p>
-            </div>
-            <ul class="list-group list-group-flush">
-              <li class="list-group-item">
-                Preferred Category: {{ campaign.category }}
-              </li>
-              <li class="list-group-item">Goals: {{ campaign.goals }}</li>
-              <li class="list-group-item">Budget: {{ campaign.budget }}</li>
-              <li class="list-group-item">Start: {{ campaign.start_date }}</li>
-              <li class="list-group-item">End: {{ campaign.end_date }}</li>
-              <li class="list-group-item">Views: {{ campaign.views }}</li>
-            </ul>
-            <div class="card-body text-center">
-              <RouterLink to="/" class="btn btn-primary"
-                >View Request</RouterLink
-              >
-              <button
-                    type="button"
-                    class="btn btn-warning mx-2"
-                    @click="submitRequest(campaign.id)"
+    <div class="container">
+      <div class="my-5 text-white">
+        <h3>Campaigns For You</h3>
+      </div>
+    </div>
+    <div v-if="campaigns.length == 0" class="my-5 text-center text-white">
+      <h5>No Current Campaigns</h5>
+    </div>
+    <div v-else class="container">
+      <div class="container-2">
+        <div class="row gap-5 justify-content-start">
+          <div
+            v-for="campaign in campaigns"
+            :key="campaign.id"
+            class="col-lg-3 col-md-8 mb-4 bg"
+          >
+            <div class="card" style="width: 100%">
+              <div class="card-body">
+                <p class="card-text">
+                  {{ campaign.by }}
+                </p>
+                <h5 class="card-title">
+                  <RouterLink
+                    class="link-dark"
+                    :to="`/show_campaign/${campaign.id}`"
+                    >{{ campaign.name }}</RouterLink
                   >
-                    Request
-                  </button>
-                  <button
-                    v-if="campaign.saved"
-                    type="button"
-                    class="btn btn-danger my-2"
-                    @click="unsaveCampaign(campaign.id)"
-                  >
-                    Unsave
-                  </button>
-                  <button
-                    v-else
-                    type="button"
-                    class="btn btn-danger my-2"
-                    @click="saveCampaign(campaign.id)"
-                  >
-                    Save
-                  </button>
+                </h5>
+                <p class="card-text">{{ campaign.desc }}</p>
+              </div>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                  Preferred Category: {{ campaign.category }}
+                </li>
+                <li class="list-group-item">Goals: {{ campaign.goals }}</li>
+                <li class="list-group-item">
+                  Total Budget: {{ campaign.budget }}
+                </li>
+                <li class="list-group-item">
+                  From: {{ campaign.start_date }} <br />
+                  To: {{ campaign.end_date }}
+                </li>
+                <li class="list-group-item">
+                  <i class="bi bi-eye-fill"></i> {{ campaign.views }}
+                </li>
+              </ul>
+              <div class="card-body text-center">
+                <RouterLink
+                  :to="`/show_campaign/${campaign.id}`"
+                  class="button button-blue"
+                  >View Request</RouterLink
+                >
+                <button
+                  type="button"
+                  class="button button-pink"
+                  @click="submitRequest(campaign.id)"
+                >
+                  Request
+                </button>
+                <button
+                  v-if="campaign.saved"
+                  type="button"
+                  class="button button-blue"
+                  @click="unsaveCampaign(campaign.id)"
+                >
+                  Unsave
+                </button>
+                <button
+                  v-else
+                  type="button"
+                  class="button button-blue"
+                  @click="saveCampaign(campaign.id)"
+                >
+                  Save
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div v-else>
-      <p>No Campaigns found in your industry.</p>
-    </div>
+    <InfluencerFooter />
   </main>
 </template>
+<style scoped>
+.card {
+  color: #40414a;
+  font-weight: 500;
+}
+.button {
+  text-decoration: none;
+  border-radius: 5px;
+  color: white;
+  transition: 0.4s;
+  margin-top: 35px;
+  padding: 5px;
+  border: none;
+}
+.button-pink {
+  background: #fa709a;
+}
+.button-blue {
+  background: #5c9df1;
+}
+.button:hover {
+  background: #784ba8;
+}
+.container {
+  position: relative;
+  z-index: 1;
+}
+</style>

@@ -5,6 +5,12 @@
 
 Built with **Flask + SQLAlchemy + Celery + Redis** on the backend and **Vue 3 + Vite + Bootstrap 5 + Chart.js** on the frontend.
 
+### Demo
+
+[![BrandBridge demo video](docs/media/demo-poster.jpg)](docs/media/demo.mp4)
+
+> 48-second walkthrough: sponsor, influencer and admin flows, then JWT auth, the data model and the async architecture. Click the image to open [`docs/media/demo.mp4`](docs/media/demo.mp4).
+
 ---
 
 ## Table of Contents
@@ -138,12 +144,14 @@ BrandBridge/
 │   ├── model.py            # SQLAlchemy models (9 tables)
 │   ├── routes.py           # All REST endpoints (Blueprint)
 │   ├── admin.py            # Flask-Admin registration -> /database
-│   ├── tasks.py            # Celery task: create_resource_csv
+│   ├── tasks.py            # Celery tasks: CSV export + daily/monthly reminders
 │   ├── worker.py           # Celery factory bound to Flask app context
 │   ├── celeryconfig.py     # Redis broker/backend URLs
+│   ├── mail_service.py     # HTML reminder emails over SMTP
+│   ├── requirements.txt    # Python dependencies
 │   ├── instance/
 │   │   └── project.db      # SQLite database (created on first run)
-│   └── uploads/            # Profile pictures + generated CSVs
+│   └── uploads/            # Logo, default avatar, QR + user-uploaded pictures
 │
 ├── frontend/
 │   ├── index.html
@@ -153,11 +161,12 @@ BrandBridge/
 │       ├── main.js
 │       ├── App.vue
 │       ├── router/index.js # 30+ routes
-│       ├── components/     # SponsorHeader, InfluencerHeader, AdminHeader, Circles
+│       ├── components/     # Sponsor / Influencer / Admin headers + footers
 │       └── views/          # 30+ page components
 │
 ├── docs/
-│   └── diagrams/           # PlantUML + rendered PNGs + render script
+│   ├── diagrams/           # PlantUML sources + rendered PNGs
+│   └── media/              # Demo video + poster
 │
 └── README.md
 ```
@@ -172,7 +181,7 @@ BrandBridge/
 |---|---|
 | Python | 3.10+ |
 | Node.js | 18+ |
-| Redis  | 6+ (required for CSV export task) |
+| Redis  | 6+ (Celery broker/results + response cache) |
 
 ### 1 — Backend
 
@@ -184,12 +193,8 @@ python -m venv .venv
 # macOS / Linux:
 source .venv/bin/activate
 
-pip install flask flask-sqlalchemy flask-migrate flask-bcrypt \
-            flask-jwt-extended flask-cors flask-admin flask-excel \
-            celery redis pandas
+pip install -r requirements.txt
 ```
-
-> _A `requirements.txt` is not committed — the dependency list above is derived from imports in `app.py`, `routes.py`, `worker.py`, `tasks.py`._
 
 Start Redis (any of these):
 ```bash
@@ -213,6 +218,11 @@ celery -A app.celery_app worker --loglevel=info
 
 > On Windows, Celery 5 needs `--pool=solo` to actually execute tasks:
 > `celery -A app.celery_app worker --loglevel=info --pool=solo`
+
+Optional: start Celery Beat in a third terminal for the scheduled daily / monthly reminder emails. They are sent over SMTP to `localhost:1025`, so a local catcher such as [MailHog](https://github.com/mailhog/MailHog) will show them:
+```bash
+celery -A app.celery_app beat --loglevel=info
+```
 
 ### 2 — Frontend
 

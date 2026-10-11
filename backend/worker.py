@@ -1,5 +1,6 @@
 from celery import Celery, Task
 from tasks import create_resource_csv
+from tasks import daily_reminder
 
 def celery_init_app(app):
     class FlaskTask(Task):

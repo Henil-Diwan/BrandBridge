@@ -1,0 +1,87 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+* {
+  font-family: "Poppins", sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #1f1f47;
+}
+
+.purple-circle {
+    position: fixed;
+    height: 500px;
+    width: 500px;
+    border-radius: 100%;
+    background-color: #784ba8;
+    left: -100px;
+    top: -200px;
+  }
+  .purple-circle-2 {
+    position: fixed;
+    height: 250px;
+    width: 250px;
+    border-radius: 100%;
+    background-color: #784ba8;
+    top: -50px;
+    left: 1000px;
+  }
+  .blue-circle {
+    position: fixed;
+    height: 500px;
+    width: 500px;
+    border-radius: 100%;
+    background-color: #5c9df1;
+    right: -100px;
+    top: 150px;
+  }
+  .blue-circle-2 {
+    position: fixed;
+    height: 300px;
+    width: 300px;
+    border-radius: 100%;
+    background-color: #5c9df1;
+    left: -100px;
+    bottom: -100px;
+  }
+  .pink-circle {
+    position: fixed;
+    height: 600px;
+    width: 600px;
+    border-radius: 100%;
+    background-color: #fa709a;
+    bottom: -150px;
+    right: 500px;
+  }
+
+  .bg {
+    padding: 15px;
+    background-image: linear-gradient(
+      45deg,
+      #fa709a 0%,
+      #fa709a 20%,
+      #5c9df1 20%,
+      #5c9df1 40%,
+      #784ba8 40%,
+      #784ba8 60%,
+      #fa709a 60%,
+      #fa709a 80%,
+      #5c9df1 80%,
+      #5c9df1 100%
+    );
+    border-radius: 5%;
+  }
+
+  .container {
+    position: relative; /* This ensures z-index works */
+    z-index: 1; /* Higher than -1 */
+  }

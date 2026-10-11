@@ -2,9 +2,8 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import { useRouter, useRoute } from "vue-router";
-import { toast } from 'vue3-toastify';
-import 'vue3-toastify/dist/index.css';
-
+import { toast } from "vue3-toastify";
+import "vue3-toastify/dist/index.css";
 let route = useRoute();
 let router = useRouter();
 let current_user = ref({
@@ -24,44 +23,34 @@ let current_sponsor = ref({
 let influencer = ref({});
 let rating = ref(0);
 let message = ref("");
-
 onMounted(async () => {
   try {
+    document.title = `BrandBridge | Rate`;
     const token = JSON.parse(localStorage.getItem("user"))?.access_token;
     console.log(token);
-
     if (!token) {
       throw new Error("No token found");
     }
-
     const response = await axios.get("http://127.0.0.1:5001/protected", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-
     current_user.value = response.data.logged_in_as;
     current_sponsor.value = response.data.current_sponsor;
-
     const response2 = await axios.get("http://127.0.0.1:5001/rate", {
-      params: { influencer_id: route.params.influencer }, // Pass user_id as a query parameter
+      params: { influencer_id: route.params.influencer },
     });
-
     console.log(response2);
-
-    // Extract data from the response and assign it to the respective variables
-
     influencer.value = response2.data.rating_influencer;
   } catch (err) {
     console.log(err);
     router.push("/login");
   }
 });
-
 let goBack = () => {
   router.go(-1);
 };
-
 const createRating = async () => {
   const ratingData = {
     influencer_id: parseInt(route.params.influencer),
@@ -69,18 +58,16 @@ const createRating = async () => {
     rating: rating.value,
     message: message.value,
   };
-  
   try {
     const response3 = await axios.post(
       "http://127.0.0.1:5001/rate",
-      ratingData,  // Send rating data in the body (not as query parameters)
+      ratingData,
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("user")?.access_token}`,
         },
       }
     );
-
     toast("Rating Created Successfully", {
       theme: "auto",
       type: "success",
@@ -101,34 +88,212 @@ const createRating = async () => {
   }
 };
 </script>
-
 <template>
-  <h1>Rate {{ influencer.name }}</h1>
-
-  <form @submit.prevent="createRating">
-    <div class="mb-3">
-      <label for="exampleInputUsername1" class="form-label">Rating</label>
-      <input
-        v-model="rating"
-        type="number"
-        class="form-control"
-        id="exampleInputUsername1"
-        aria-describedby="usernamelHelp"
-      />
+  <div class="wrapper">
+    <div class="container main">
+      <div class="row">
+        <div class="input-box">
+          <header>Rate {{ influencer.name }}</header>
+          <form @submit.prevent="createRating">
+            <div class="input-field">
+              <input
+                v-model="rating"
+                type="number"
+                class="input"
+                id="rating"
+                required=""
+                autocomplete="off"
+                name="Rating"
+              />
+              <label for="rating">Rating out of 5</label>
+            </div>
+            <div class="input-field">
+              <input
+                v-model="message"
+                type="text"
+                class="input"
+                id="message"
+                required=""
+                autocomplete="off"
+                name="Message"
+              />
+              <label for="message">Message</label>
+            </div>
+            <div class="input-field">
+              <input type="submit" class="submit" value="Rate" />
+            </div>
+          </form>
+          <div class="back">
+            <button class="back_button" @click="goBack">Back</button>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="mb-3">
-      <label for="exampleInputEmail1" class="form-label">Message</label>
-      <input
-        v-model="message"
-        type="text"
-        class="form-control"
-        id="exampleInputEmail1"
-        aria-describedby="emailHelp"
-      />
-    </div>
-    
-    <button type="submit" class="btn btn-primary">Submit</button>
-  </form>
-  <br />
-  <button @click="goBack">Back</button>
+  </div>
 </template>
+<style scoped>
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+* {
+  font-family: "Poppins", sans-serif;
+  margin: 0;
+  padding: 0;
+}
+body {
+  margin: 0;
+  padding: 0;
+}
+.wrapper {
+  background: #1f1f47;
+  padding: 50px;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+  min-width: 40vw;
+  padding: 50px 20px;
+  background-image: linear-gradient(
+    45deg,
+    #fa709a 0%,
+    #fa709a 20%,
+    #5c9df1 20%,
+    #5c9df1 40%,
+    #784ba8 40%,
+    #784ba8 60%,
+    #fa709a 60%,
+    #fa709a 80%,
+    #5c9df1 80%,
+    #5c9df1 100%
+  );
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  border-radius: 10px;
+  position: relative;
+}
+.row {
+  width: 100%;
+  max-width: 500px;
+  border-radius: 10px;
+  background: white;
+  padding: 20px;
+  box-shadow: 20px 20px 30px 1px rgba(0, 0, 0, 0.2);
+}
+.input-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.input-box header {
+  font-size: large;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 30px;
+  color: #1f1f47;
+}
+.input-field {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding: 0 10px;
+}
+.input {
+  height: 45px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #1f1f47;
+  outline: none;
+  margin-bottom: 20px;
+  color: #40414a;
+}
+.input-box .input-field label {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  pointer-events: none;
+  transition: 0.5s;
+  color: #1f1f47;
+}
+.input-field input:focus ~ label,
+.input-field input:valid ~ label {
+  top: -10px;
+  font-size: 13px;
+  color: #784ba8;
+}
+.input-field .input:focus,
+.input-field .input:valid {
+  border-bottom: 1px solid #5c9df1;
+}
+.dropdown-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 20px;
+}
+.dropdown-wrapper select {
+  height: 45px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #1f1f47;
+  padding: 10px;
+  color: #40414a;
+  outline: none;
+  appearance: none;
+  font-size: 16px;
+}
+.dropdown-wrapper .dropdown-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: #1f1f47;
+}
+.submit {
+  border: none;
+  outline: none;
+  height: 45px;
+  background: #fa709a;
+  border-radius: 5px;
+  color: #fff;
+  transition: 0.4s;
+  margin-top: 20px;
+}
+.submit:hover {
+  background: #784ba8;
+}
+.back {
+  text-align: center;
+  font-size: small;
+  margin-top: 25px;
+}
+.back_button {
+  text-decoration: none;
+  background-color: transparent;
+  border: none;
+  font-weight: 700;
+  color: #1f1f47;
+  transition: 0.5s;
+}
+.back_button:hover {
+  text-decoration: underline;
+  color: #fa709a;
+}
+@media only screen and (max-width: 768px) {
+  .row {
+    width: 100%;
+    padding: 15px;
+  }
+}
+</style>

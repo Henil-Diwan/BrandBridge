@@ -3,8 +3,8 @@ import { ref, onMounted, nextTick } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import AdminHeader from "@/components/AdminHeader.vue";
+import AdminFooter from "@/components/AdminFooter.vue";
 import Chart from "chart.js/auto";
-
 let router = useRouter();
 let current_user = ref({
   user_id: 0,
@@ -12,7 +12,6 @@ let current_user = ref({
   email: "",
   type: "",
 });
-
 let Labels_Sponsors = ref([]);
 let Values_Sponsors = ref([]);
 let Values_Influencers = ref([]);
@@ -20,34 +19,25 @@ let Labels_Campaigns = ref([]);
 let Values_Campaigns = ref([]);
 let NonFlagged_Values = ref([]);
 let Flagged_Values = ref([]);
-
 onMounted(async () => {
   try {
+    document.title = `BrandBridge | Admin`;
     const token = JSON.parse(localStorage.getItem("user"))?.access_token;
     console.log(token);
-
     if (!token) {
       throw new Error("No token found");
     }
-
     const response = await axios.get("http://127.0.0.1:5001/protected", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-
     current_user.value = response.data.logged_in_as;
-
     console.log(current_user.value);
-
     const response2 = await axios.get("http://127.0.0.1:5001/admin_home", {
-      params: {}, // Pass user_id as a query parameter
+      params: {},
     });
-
     console.log(response2);
-
-    // Extract data from the response and assign it to the respective variables
-
     Labels_Sponsors.value = response2.data.Labels_Sponsors;
     Labels_Campaigns.value = response2.data.Labels_Campaigns;
     Values_Campaigns.value = response2.data.Values_Campaign;
@@ -55,7 +45,6 @@ onMounted(async () => {
     Values_Influencers.value = response2.data.Values_Influencers;
     NonFlagged_Values.value = response2.data.NonFlagged_Values;
     Flagged_Values.value = response2.data.Flagged_Values;
-
     nextTick(() => {
       const ctx = document.getElementById("myChart");
       new Chart(ctx, {
@@ -87,7 +76,6 @@ onMounted(async () => {
           },
         },
       });
-
       const ctx2 = document.getElementById("influencerChart");
       new Chart(ctx2, {
         type: "doughnut",
@@ -118,7 +106,6 @@ onMounted(async () => {
           },
         },
       });
-
       const ctx3 = document.getElementById("campaignChart");
       new Chart(ctx3, {
         type: "bar",
@@ -146,7 +133,6 @@ onMounted(async () => {
           },
         },
       });
-
       const ctx4 = document.getElementById("flaggedChart");
       new Chart(ctx4, {
         type: "bar",
@@ -183,23 +169,23 @@ onMounted(async () => {
     });
   } catch (err) {
     console.log(err);
-
     router.push("/login");
   }
 });
 </script>
-
 <template>
-  <main>
-    <AdminHeader />
-
-    <h2>Welcome Admin</h2>
-
+  <AdminHeader />
+  <div class="container">
+    <div class="my-5 text-white">
+      <h3>Welcome Admin</h3>
+    </div>
+  </div>
+  <div class="container chart-container">
     <div class="row justify-content-between">
-      <div class="mychart-container w-50">
+      <div class="mychart-container">
         <canvas id="myChart"></canvas>
       </div>
-      <div class="mychart-container w-50">
+      <div class="mychart-container">
         <canvas id="influencerChart"></canvas>
       </div>
     </div>
@@ -213,5 +199,21 @@ onMounted(async () => {
         <canvas id="flaggedChart"></canvas>
       </div>
     </div>
-  </main>
+  </div>
+  <AdminFooter />
 </template>
+<style scoped>
+.chart-container {
+  background-color: white;
+  border-radius: 50px;
+  padding: 50px;
+  box-shadow: 20px 20px 30px 1px rgba(0, 0, 0, 0.2);
+}
+.mychart-container {
+  width: 500px;
+  height: 500px;
+}
+.mychart-container-2 {
+  width: 100%;
+}
+</style>
